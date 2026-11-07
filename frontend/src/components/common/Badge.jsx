@@ -8,7 +8,7 @@ const TONES = {
   danger: 'bg-rose-50 text-rose-700',
   accent: 'bg-orange-50 text-accent-600',
 };
-
+//ok
 const Badge = ({ tone = 'neutral', className, children }) => (
   <span
     className={cn(

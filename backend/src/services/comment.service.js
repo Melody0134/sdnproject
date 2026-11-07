@@ -3,7 +3,7 @@ const Post = require('../models/post.model');
 const AppError = require('../utils/app-error');
 const { parsePagination, buildPageResult } = require('../utils/pagination');
 const notificationService = require('./notification.service');
-
+//ok
 const listForPost = async (postId, query) => {
   const { page, limit, skip } = parsePagination(query);
   const filter = { post: postId };
