@@ -7,7 +7,7 @@ const createAnnouncementSchema = Joi.object({
   course: Joi.string().hex().length(24).when('scope', { is: 'course', then: Joi.required(), otherwise: Joi.valid(null) }),
   audience: Joi.string().valid('all', 'students', 'lecturers').default('all'),
 });
-
+//ok
 const updateAnnouncementSchema = Joi.object({
   title: Joi.string().min(3).max(200),
   content: Joi.string().min(3).max(5000),
