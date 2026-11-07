@@ -42,3 +42,4 @@ const postIdParamsSchema = Joi.object({
 });
 
 module.exports = { createPostSchema, updatePostSchema, reactSchema, listPostsQuerySchema, postIdParamsSchema };
+//ok
