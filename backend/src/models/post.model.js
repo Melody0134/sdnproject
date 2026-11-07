@@ -34,3 +34,4 @@ postSchema.index({ type: 1 });
 postSchema.index({ type: 1, status: 1, eventDate: 1 });
 
 module.exports = mongoose.model('Post', postSchema);
+//ok
