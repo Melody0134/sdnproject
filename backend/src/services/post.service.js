@@ -51,7 +51,7 @@ const listPosts = async (query, requester) => {
   const shaped = items.map((post) => shapePost(post, requester.id, commentCounts[post._id.toString()] || 0));
   return buildPageResult(shaped, total, page, limit);
 };
-
+//ok
 const getPost = async (postId, requester) => {
   const post = await Post.findById(postId).populate('author', 'name role avatarUrl').lean();
   if (!post || (post.status !== 'published' && requester.role !== 'admin' &&
