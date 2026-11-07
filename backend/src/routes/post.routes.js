@@ -44,4 +44,3 @@ router.post('/:id/comments', validate(createCommentSchema), commentController.ad
 router.delete('/:id/comments/:commentId', commentController.deleteComment);
 
 module.exports = router;
-//ok
