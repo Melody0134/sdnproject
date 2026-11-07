@@ -85,3 +85,4 @@ const logout = async (userId) => {
 };
 
 module.exports = { register, login, changePassword, forgotPassword, resetPassword, logout };
+//ok
