@@ -5,7 +5,7 @@ const listNotificationsQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100),
   unreadOnly: Joi.string().valid('true', 'false'),
 });
-
+//ok
 const sendNotificationSchema = Joi.object({
   recipient: Joi.string().hex().length(24),
   audience: Joi.string().valid('all', 'student', 'lecturer', 'admin', 'club_leader'),
