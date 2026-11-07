@@ -32,3 +32,4 @@ const reactToPost = asyncHandler(async (req, res) => {
 });
 
 module.exports = { createPost, listPosts, getPost, updatePost, deletePost, reactToPost };
+//ok
