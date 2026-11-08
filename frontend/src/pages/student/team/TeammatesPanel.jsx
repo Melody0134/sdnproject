@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { teamApi } from '../../../api';
+import { teamApi, invitationApi } from '../../../api';
 import { useToast } from '../../../context/ToastContext';
 import { Card, CardHeader, CardBody, Badge, Button, EmptyState } from '../../../components/common';
 import Avatar from '../../../components/common/Avatar';
@@ -7,8 +7,19 @@ import Avatar from '../../../components/common/Avatar';
 const TeammatesPanel = ({ teamId }) => {
   const toast = useToast();
   const [candidates, setCandidates] = useState([]);
+  const [sentInvitations, setSentInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inviting, setInviting] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
+
+  const loadInvitations = async () => {
+    try {
+      const res = await teamApi.invitations(teamId, { status: 'pending' });
+      setSentInvitations(res.data || []);
+    } catch {
+      setSentInvitations([]);
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -16,6 +27,7 @@ const TeammatesPanel = ({ teamId }) => {
       try {
         const res = await teamApi.recommendedTeammates(teamId, { limit: 6 });
         setCandidates(res.data.recommendations);
+        await loadInvitations();
       } catch (err) {
         toast.error(err.message);
       } finally {
@@ -31,10 +43,24 @@ const TeammatesPanel = ({ teamId }) => {
       await teamApi.invite(teamId, { inviteeId: candidateId });
       setCandidates((current) => current.filter(({ candidate }) => candidate._id !== candidateId));
       toast.success('Đã gửi lời mời vào nhóm');
+      await loadInvitations();
     } catch (err) {
       toast.error(err.message);
     } finally {
       setInviting(null);
+    }
+  };
+
+  const handleCancelInvitation = async (invitationId) => {
+    setCancellingId(invitationId);
+    try {
+      await invitationApi.cancel(invitationId);
+      toast.success('Đã thu hồi lời mời');
+      await loadInvitations();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -67,6 +93,31 @@ const TeammatesPanel = ({ teamId }) => {
               </div>
             </div>
           ))
+        )}
+
+        {sentInvitations.length > 0 && (
+          <div className="mt-4 border-t border-slate-100 pt-3">
+            <p className="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lời mời đã gửi ({sentInvitations.length})</p>
+            <div className="space-y-2">
+              {sentInvitations.map((inv) => (
+                <div key={inv._id} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-2 text-xs">
+                  <div className="flex items-center gap-2 truncate">
+                    <Avatar name={inv.invitee?.name} src={inv.invitee?.avatarUrl} size="sm" className="h-6 w-6 text-[10px]" />
+                    <span className="truncate font-medium text-slate-700">{inv.invitee?.name}</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 text-xs text-rose-600 hover:bg-rose-50"
+                    onClick={() => handleCancelInvitation(inv._id)}
+                    loading={cancellingId === inv._id}
+                  >
+                    Thu hồi
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </CardBody>
     </Card>
