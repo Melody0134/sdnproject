@@ -32,4 +32,14 @@ const downloadFile = asyncHandler(async (req, res) => {
   res.type(mimeType).download(filePath, fileName);
 });
 
-module.exports = { uploadFile, addLink, listResources, deleteResource, downloadFile };
+const updateResource = asyncHandler(async (req, res) => {
+  const resource = await teamResourceService.updateResource(
+    req.params.id,
+    req.params.resourceId,
+    req.user,
+    req.body
+  );
+  res.status(200).json({ success: true, data: { resource } });
+});
+
+module.exports = { uploadFile, addLink, listResources, deleteResource, downloadFile, updateResource };
