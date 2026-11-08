@@ -17,6 +17,9 @@ const WorkspacePanel = ({ teamId }) => {
   const [savingLink, setSavingLink] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -76,6 +79,21 @@ const WorkspacePanel = ({ teamId }) => {
       load();
     } catch (err) {
       toast.error(err.message);
+    }
+  };
+
+  const submitEditResource = async () => {
+    if (!editTarget || !editTitle.trim()) return;
+    setSavingEdit(true);
+    try {
+      await teamApi.updateResource(teamId, editTarget._id, { title: editTitle.trim() });
+      toast.success('Đã cập nhật tiêu đề tài nguyên');
+      setEditTarget(null);
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -145,14 +163,29 @@ const WorkspacePanel = ({ teamId }) => {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setToDelete(res)}
-                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
-                aria-label="Xóa"
-              >
-                <Icon name="trash" className="h-4 w-4" />
-              </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditTarget(res);
+                      setEditTitle(res.title);
+                    }}
+                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    title="Chỉnh sửa tiêu đề"
+                    aria-label="Chỉnh sửa"
+                  >
+                    <Icon name="edit" className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setToDelete(res)}
+                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                    title="Xóa tài nguyên"
+                    aria-label="Xóa"
+                  >
+                    <Icon name="trash" className="h-4 w-4" />
+                  </button>
+                </div>
             </div>
           ))
         )}
@@ -176,6 +209,27 @@ const WorkspacePanel = ({ teamId }) => {
             placeholder="https://..."
             value={link.linkUrl}
             onChange={(e) => setLink({ ...link, linkUrl: e.target.value })}
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(editTarget)}
+        onClose={() => setEditTarget(null)}
+        title="Chỉnh sửa tiêu đề tài nguyên"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditTarget(null)}>Hủy</Button>
+            <Button onClick={submitEditResource} loading={savingEdit}>Lưu thay đổi</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Tiêu đề mới"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            required
           />
         </div>
       </Modal>
