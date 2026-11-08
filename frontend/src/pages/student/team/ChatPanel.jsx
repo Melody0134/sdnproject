@@ -51,6 +51,16 @@ const ChatPanel = ({ teamId }) => {
     }
   };
 
+  const deleteMsg = async (messageId) => {
+    try {
+      await teamApi.deleteMessage(teamId, messageId);
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+      toast.success('Đã xóa tin nhắn');
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
   return (
     <Card>
       <CardBody>
@@ -67,15 +77,27 @@ const ChatPanel = ({ teamId }) => {
                   <Avatar name={message.sender?.name} src={message.sender?.avatarUrl} size="sm" />
                   <div
                     className={cn(
-                      'max-w-[75%] rounded-xl px-3 py-2',
+                      'group relative max-w-[75%] rounded-xl px-3 py-2',
                       isMine ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'
                     )}
                   >
                     {!isMine && <p className="text-xs font-semibold text-slate-500">{message.sender?.name}</p>}
                     <p className="whitespace-pre-line text-sm">{message.content}</p>
-                    <p className={cn('mt-0.5 text-[10px]', isMine ? 'text-brand-100' : 'text-slate-400')}>
-                      {formatRelative(message.createdAt)}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={cn('mt-0.5 text-[10px]', isMine ? 'text-brand-100' : 'text-slate-400')}>
+                        {formatRelative(message.createdAt)}
+                      </p>
+                      {isMine && (
+                        <button
+                          type="button"
+                          onClick={() => deleteMsg(message._id)}
+                          className="text-[10px] text-brand-200 opacity-0 transition group-hover:opacity-100 hover:text-white"
+                          title="Xóa tin nhắn"
+                        >
+                          Xóa
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
