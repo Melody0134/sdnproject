@@ -6,6 +6,7 @@ router.use('/auth', require('./auth.routes'));
 router.use('/users', require('./user.routes'));
 router.use('/teams', require('./team.routes'));
 router.use('/join-requests', require('./join-request.routes'));
+router.use('/clubs', require('./club.routes'));
 router.use('/club-registrations', require('./club-registration.routes'));
 router.use('/team-invitations', require('./team-invitation.routes'));
 router.use('/courses', require('./course.routes'));
