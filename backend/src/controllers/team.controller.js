@@ -60,6 +60,16 @@ const getRecommendedTeammates = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: { recommendations } });
 });
 
+const transferLeader = asyncHandler(async (req, res) => {
+  const team = await teamService.transferLeader(req.params.id, req.user.id, req.body.newLeaderId);
+  res.status(200).json({ success: true, data: { team } });
+});
+
+const updateTeamStatus = asyncHandler(async (req, res) => {
+  const team = await teamService.updateTeamStatus(req.params.id, req.user.id, req.body.status);
+  res.status(200).json({ success: true, data: { team } });
+});
+
 module.exports = {
   createTeam,
   listTeams,
@@ -71,4 +81,6 @@ module.exports = {
   leaveTeam,
   getRecommendedTeams,
   getRecommendedTeammates,
+  transferLeader,
+  updateTeamStatus,
 };
