@@ -11,6 +11,9 @@ const {
   decideJoinRequestSchema,
   addLinkResourceSchema,
   sendMessageSchema,
+  transferLeaderSchema,
+  updateTeamStatusSchema,
+  updateResourceSchema,
 } = require('../validators/team.validator');
 const teamController = require('../controllers/team.controller');
 const joinRequestController = require('../controllers/join-request.controller');
@@ -33,6 +36,8 @@ router.get('/mine', teamController.listMyTeams);
 router.get('/recommended', restrictTo('student'), teamController.getRecommendedTeams);
 
 router.get('/:id', teamController.getTeam);
+router.patch('/:id/transfer-leader', validate(transferLeaderSchema), teamController.transferLeader);
+router.patch('/:id/status', validate(updateTeamStatusSchema), teamController.updateTeamStatus);
 router.patch('/:id', validate(updateTeamSchema), teamController.updateTeam);
 router.delete('/:id', teamController.deleteTeam);
 
@@ -54,11 +59,13 @@ router.patch('/join-requests/:requestId', validate(decideJoinRequestSchema), joi
 
 router.get('/:id/messages', teamMessageController.listMessages);
 router.post('/:id/messages', validate(sendMessageSchema), teamMessageController.sendMessage);
+router.delete('/:id/messages/:messageId', teamMessageController.deleteMessage);
 
 router.get('/:id/resources', teamResourceController.listResources);
 router.get('/:id/resources/:resourceId/download', teamResourceController.downloadFile);
 router.post('/:id/resources/files', uploadRateLimit, upload.single('file'), teamResourceController.uploadFile);
 router.post('/:id/resources/links', validate(addLinkResourceSchema), teamResourceController.addLink);
+router.patch('/:id/resources/:resourceId', validate(updateResourceSchema), teamResourceController.updateResource);
 router.delete('/:id/resources/:resourceId', teamResourceController.deleteResource);
 
 module.exports = router;

@@ -13,6 +13,8 @@ const notificationSchema = new mongoose.Schema(
         'team_invitation_accepted',
         'team_invitation_rejected',
         'team_member_removed',
+        'team_role_changed',
+        'team_message_received',
         'announcement_posted',
         'quiz_published',
         'post_commented',

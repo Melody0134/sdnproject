@@ -42,6 +42,9 @@ const TeamDetailPage = () => {
   const [joinMessage, setJoinMessage] = useState('');
   const [joining, setJoining] = useState(false);
   const [confirm, setConfirm] = useState(null);
+  const [transferTarget, setTransferTarget] = useState(null);
+  const [transferring, setTransferring] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} onRetry={run} />;
@@ -124,13 +127,51 @@ const TeamDetailPage = () => {
     }
   };
 
+  const handleTransferLeader = async () => {
+    if (!transferTarget) return;
+    setTransferring(true);
+    try {
+      await teamApi.transferLeader(id, transferTarget._id);
+      toast.success(`Đã chuyển quyền trưởng nhóm cho ${transferTarget.name}`);
+      setTransferTarget(null);
+      run();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setTransferring(false);
+    }
+  };
+
+  const handleToggleStatus = async () => {
+    const nextStatus = team.status === 'recruiting' ? 'closed' : 'recruiting';
+    setUpdatingStatus(true);
+    try {
+      await teamApi.updateStatus(id, nextStatus);
+      toast.success(nextStatus === 'recruiting' ? 'Đã mở tuyển thành viên' : 'Đã đóng tuyển thành viên');
+      run();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   return (
     <div>
       <PageHeader
         title={team.name}
         description={team.topic || team.major}
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {isLeader && team.status !== 'full' && (
+              <Button
+                variant="secondary"
+                onClick={handleToggleStatus}
+                loading={updatingStatus}
+              >
+                {team.status === 'recruiting' ? 'Đóng tuyển' : 'Mở tuyển lại'}
+              </Button>
+            )}
             {isLeader && (
               <Button variant="secondary" onClick={openEdit}>
                 <Icon name="edit" className="h-4 w-4" /> Chỉnh sửa
@@ -193,14 +234,26 @@ const TeamDetailPage = () => {
                         <Badge tone="brand">Trưởng nhóm</Badge>
                       ) : (
                         isLeader && (
-                          <button
-                            type="button"
-                            onClick={() => removeMember(member.user?._id)}
-                            className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
-                            aria-label="Xóa thành viên"
-                          >
-                            <Icon name="close" className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setTransferTarget(member.user)}
+                              className="rounded-lg p-1 text-slate-400 transition hover:bg-brand-50 hover:text-brand-600"
+                              title="Chuyển quyền trưởng nhóm"
+                              aria-label="Chuyển quyền trưởng nhóm"
+                            >
+                              <Icon name="sparkles" className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeMember(member.user?._id)}
+                              className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                              title="Xóa thành viên"
+                              aria-label="Xóa thành viên"
+                            >
+                              <Icon name="close" className="h-4 w-4" />
+                            </button>
+                          </div>
                         )
                       )}
                     </div>
@@ -295,6 +348,14 @@ const TeamDetailPage = () => {
         confirmLabel="Rời nhóm"
         onConfirm={leaveTeam}
         onClose={() => setConfirm(null)}
+      />
+      <ConfirmDialog
+        open={Boolean(transferTarget)}
+        title="Chuyển quyền trưởng nhóm"
+        message={`Bạn có chắc chắn muốn chuyển giao quyền trưởng nhóm cho "${transferTarget?.name}"? Sau khi chuyển, bạn sẽ trở thành thành viên thông thường.`}
+        confirmLabel="Xác nhận chuyển"
+        onConfirm={handleTransferLeader}
+        onClose={() => setTransferTarget(null)}
       />
     </div>
   );

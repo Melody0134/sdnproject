@@ -11,4 +11,9 @@ const sendMessage = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: { message } });
 });
 
-module.exports = { listMessages, sendMessage };
+const deleteMessage = asyncHandler(async (req, res) => {
+  await teamMessageService.deleteMessage(req.params.id, req.params.messageId, req.user);
+  res.status(204).send();
+});
+
+module.exports = { listMessages, sendMessage, deleteMessage };

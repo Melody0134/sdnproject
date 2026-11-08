@@ -27,9 +27,39 @@ const listMessages = async (teamId, requester, query = {}) => {
 };
 
 const sendMessage = async (teamId, requester, content) => {
-  await assertMembership(teamId, requester);
+  const team = await assertMembership(teamId, requester);
   const message = await TeamMessage.create({ team: teamId, sender: requester.id, content });
+
+  const notificationService = require('./notification.service');
+  const recipientIds = (team.members || [])
+    .map((m) => m.user.toString())
+    .filter((uid) => uid !== requester.id.toString());
+
+  for (const recipientId of recipientIds) {
+    await notificationService.notify({
+      recipient: recipientId,
+      type: 'team_message_received',
+      message: `${requester.name || 'Thành viên'} đã gửi tin nhắn trong nhóm`,
+      link: `/teams/${teamId}`,
+    });
+  }
+
   return TeamMessage.findById(message._id).populate('sender', 'name avatarUrl').lean();
 };
 
-module.exports = { listMessages, sendMessage };
+const deleteMessage = async (teamId, messageId, requester) => {
+  const team = await assertMembership(teamId, requester);
+  const message = await TeamMessage.findOne({ _id: messageId, team: teamId });
+  if (!message) throw new AppError('Không tìm thấy tin nhắn', 404);
+
+  const isSender = message.sender.toString() === requester.id.toString();
+  const isLeader = team.leader?.toString() === requester.id.toString();
+  if (!isSender && !isLeader && requester.role !== 'admin') {
+    throw new AppError('Bạn không có quyền xóa tin nhắn này', 403);
+  }
+
+  await TeamMessage.deleteOne({ _id: messageId });
+  return { success: true };
+};
+
+module.exports = { listMessages, sendMessage, deleteMessage };

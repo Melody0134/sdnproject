@@ -42,14 +42,19 @@ export const teamApi = {
   resources: (id) => client.get(`/teams/${id}/resources`),
   uploadFile: (id, formData) => client.post(`/teams/${id}/resources/files`, formData),
   addLink: (id, payload) => client.post(`/teams/${id}/resources/links`, payload),
+  updateResource: (id, resourceId, payload) => client.patch(`/teams/${id}/resources/${resourceId}`, payload),
   removeResource: (id, resourceId) => client.delete(`/teams/${id}/resources/${resourceId}`),
   downloadResource: (id, resourceId) => client.get(`/teams/${id}/resources/${resourceId}/download`, { responseType: 'blob' }),
+  deleteMessage: (id, messageId) => client.delete(`/teams/${id}/messages/${messageId}`),
+  transferLeader: (id, newLeaderId) => client.patch(`/teams/${id}/transfer-leader`, { newLeaderId }),
+  updateStatus: (id, status) => client.patch(`/teams/${id}/status`, { status }),
 };
 
 export const invitationApi = {
   mine: (params) => client.get('/team-invitations/mine', { params }),
   accept: (id) => client.post(`/team-invitations/${id}/accept`),
   reject: (id) => client.post(`/team-invitations/${id}/reject`),
+  cancel: (id) => client.post(`/team-invitations/${id}/cancel`),
 };
 
 export const joinRequestApi = {
@@ -151,6 +156,11 @@ export const postApi = {
   comments: (id, params) => client.get(`/posts/${id}/comments`, { params }),
   addComment: (id, content) => client.post(`/posts/${id}/comments`, { content }),
   removeComment: (id, commentId) => client.delete(`/posts/${id}/comments/${commentId}`),
+};
+
+export const clubApi = {
+  list: (params) => client.get('/clubs', { params }),
+  get: (id) => client.get(`/clubs/${id}`),
 };
 
 export const notificationApi = {

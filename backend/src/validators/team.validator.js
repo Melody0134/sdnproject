@@ -45,6 +45,19 @@ const sendMessageSchema = Joi.object({
   content: Joi.string().min(1).max(2000).required(),
 });
 
+const transferLeaderSchema = Joi.object({
+  newLeaderId: Joi.string().hex().length(24).required(),
+});
+
+const updateTeamStatusSchema = Joi.object({
+  status: Joi.string().valid('recruiting', 'closed').required(),
+});
+
+const updateResourceSchema = Joi.object({
+  title: Joi.string().min(2).max(200),
+  linkUrl: Joi.string().uri(),
+}).min(1);
+
 module.exports = {
   createTeamSchema,
   updateTeamSchema,
@@ -53,4 +66,7 @@ module.exports = {
   decideJoinRequestSchema,
   addLinkResourceSchema,
   sendMessageSchema,
+  transferLeaderSchema,
+  updateTeamStatusSchema,
+  updateResourceSchema,
 };

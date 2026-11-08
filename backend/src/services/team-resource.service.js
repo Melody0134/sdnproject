@@ -76,4 +76,22 @@ const getFile = async (teamId, resourceId, userId) => {
   return { filePath, fileName: resource.fileName, mimeType: resource.mimeType };
 };
 
-module.exports = { addFileResource, addLinkResource, listResources, deleteResource, getFile };
+const updateResource = async (teamId, resourceId, requester, updates) => {
+  const team = await assertMember(teamId, requester.id);
+  const resource = await TeamResource.findOne({ _id: resourceId, team: teamId });
+  if (!resource) throw new AppError('Không tìm thấy tài nguyên', 404);
+
+  const isOwner = resource.uploadedBy.toString() === requester.id.toString();
+  const isLeader = team.leader.toString() === requester.id.toString();
+  if (!isOwner && !isLeader && requester.role !== 'admin') {
+    throw new AppError('Bạn không có quyền sửa tài nguyên này', 403);
+  }
+
+  if (updates.title) resource.title = updates.title;
+  if (updates.linkUrl && resource.type === 'link') resource.linkUrl = updates.linkUrl;
+  await resource.save();
+
+  return TeamResource.findById(resource._id).populate('uploadedBy', 'name avatarUrl').lean();
+};
+
+module.exports = { addFileResource, addLinkResource, listResources, deleteResource, getFile, updateResource };
