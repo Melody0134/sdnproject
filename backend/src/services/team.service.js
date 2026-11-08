@@ -157,6 +157,60 @@ const getRecommendedTeammates = async (teamId, requester, limit = 10) => {
   return rankCandidatesForTeam(team, candidates, limit);
 };
 
+const transferLeader = async (teamId, currentLeaderId, newLeaderId) => {
+  const team = await Team.findById(teamId);
+  if (!team) throw new AppError('Không tìm thấy nhóm', 404);
+  assertLeader(team, currentLeaderId);
+
+  if (newLeaderId.toString() === currentLeaderId.toString()) {
+    throw new AppError('Bạn đã là trưởng nhóm', 400);
+  }
+
+  const newLeaderMember = team.members.find((m) => m.user.toString() === newLeaderId.toString());
+  if (!newLeaderMember) {
+    throw new AppError('Thành viên mới phải thuộc nhóm này', 400);
+  }
+
+  team.leader = newLeaderId;
+  team.members.forEach((m) => {
+    if (m.user.toString() === newLeaderId.toString()) {
+      m.role = 'leader';
+    } else if (m.user.toString() === currentLeaderId.toString()) {
+      m.role = 'member';
+    }
+  });
+
+  await team.save();
+
+  try {
+    const notificationService = require('./notification.service');
+    await notificationService.notify({
+      recipient: newLeaderId,
+      type: 'team_role_changed',
+      message: `Bạn đã được chuyển giao quyền trưởng nhóm "${team.name}"`,
+      link: `/teams/${team._id}`,
+    });
+  } catch (err) {
+    console.error('Không thể gửi thông báo chuyển quyền:', err.message);
+  }
+
+  return getTeamById(teamId);
+};
+
+const updateTeamStatus = async (teamId, leaderId, status) => {
+  const team = await Team.findById(teamId);
+  if (!team) throw new AppError('Không tìm thấy nhóm', 404);
+  assertLeader(team, leaderId);
+
+  if (status === 'recruiting' && team.members.length >= team.maxMembers) {
+    throw new AppError('Nhóm đã đủ số lượng thành viên, không thể mở tuyển', 400);
+  }
+
+  team.status = status;
+  await team.save();
+  return getTeamById(teamId);
+};
+
 module.exports = {
   createTeam,
   listTeams,
@@ -168,6 +222,8 @@ module.exports = {
   leaveTeam,
   getRecommendedTeams,
   getRecommendedTeammates,
+  transferLeader,
+  updateTeamStatus,
   assertLeader,
   addMemberWithinCapacity,
 };
